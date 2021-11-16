@@ -6,18 +6,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.chatapp.activities.ChatActivity;
 import com.example.chatapp.models.Users;
 import com.example.chatapp.utilities.Constants;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Objects;
 
-public class Reciever_info extends AppCompatActivity {
+public class Receiver_info extends AppCompatActivity {
 
     private Users recieveUsers;
     private ImageView profileImage;
@@ -47,9 +45,9 @@ public class Reciever_info extends AppCompatActivity {
                 return;
             }
             if(value!=null) {
-                if(value.getLong(Constants.KEY_AVAILABILTY)!=null)
+                if(value.getLong(Constants.KEY_AVAILABILITY)!=null)
                 {
-                    int online = Objects.requireNonNull(value.getLong(Constants.KEY_AVAILABILTY)).intValue();
+                    int online = Objects.requireNonNull(value.getLong(Constants.KEY_AVAILABILITY)).intValue();
                     isReceiverOnline = online==1;
                 }
                 recieveUsers.token = value.getString(Constants.KEY_FCM_TOKEN);

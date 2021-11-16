@@ -119,4 +119,10 @@ public class UsersActivity extends BaseActivity implements UserListener {
         startActivity(intent);
         finish();
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
 }

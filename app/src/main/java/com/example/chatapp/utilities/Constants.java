@@ -15,22 +15,22 @@ public class Constants {
     public static final String KEY_USER = "user";
     public static final String KEY_COLLECTION_CHAT = "chat";
     public static final String KEY_SENDER_ID = "senderid";
-    public static final String KEY_RECIEVER_ID = "recieverid";
+    public static final String KEY_RECEIVER_ID = "recieverid";
     public static final String KEY_MESSAGE = "message";
     public static final String KEY_TIMESTAMP = "timestamp";
     public static final String KEY_COLLECTION_CONVERSATIONS = "conversations";
-    public static final String KEY_RECIEVER_NAME = "recieverName";
+    public static final String KEY_RECEIVER_NAME = "recieverName";
     public static final String KEY_SENDER_NAME = "senderName";
     public static final String KEY_SENDER_IMAGE = "senderImage";
-    public static final String KEY_RECIVER_IMAGE = "recieverImage";
+    public static final String KEY_RECEIVER_IMAGE = "recieverImage";
     public static final String KEY_LAST_MESSAGE = "lastMessage";
-    public static final String KEY_AVAILABILTY = "online";
+    public static final String KEY_AVAILABILITY = "online";
     public static final String REMOTE_MSG_AUTHORIZATION = "Authorization";
     public static final String REMOTE_MSG_CONTENT_TYPE = "Content-Type";
     public static final String REMOTE_MSG_DATA = "data";
     public static final String REMOTE_MSG_REGISTRATION_IDS = "registration_ids";
     public static final String CHAT_UNIQUE_ID = "uniqueID";
-    public static final String RECIVED_MESSAGE_EMOJI = "emoji";
+    public static final String RECEIVED_MESSAGE_EMOJI = "emoji";
 
 
 

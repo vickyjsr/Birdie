@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.example.chatapp.R;
-import com.example.chatapp.Reciever_info;
+import com.example.chatapp.Receiver_info;
 import com.example.chatapp.adapters.ChatAdapter;
 import com.example.chatapp.databinding.ActivityChatBinding;
 import com.example.chatapp.listeners.SingleChatRemove;
@@ -37,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,6 +50,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -57,15 +61,14 @@ import retrofit2.Response;
 public class ChatActivity extends BaseActivity implements SingleChatRemove {
 
     private ActivityChatBinding binding;
-    private Users recieveUsers;
+    private Users receiveUsers;
     private List<ChatMessage> chatMessages;
     private PreferenceManager preferenceManager;
     private ChatAdapter chatAdapter;
     private FirebaseFirestore database;
     private String conversationId = null;
     private Boolean isReceiverOnline = false;
-
-
+    private final String AES = "AES";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +76,7 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setListeners();
-        loadRecieverDetails();
+        loadReceiverDetails();
         init();
         listenMessages();
     }
@@ -82,7 +85,7 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
     {
         preferenceManager = new PreferenceManager(getApplicationContext());
         chatMessages = new ArrayList<>();
-        chatAdapter = new ChatAdapter(chatMessages,getBitmapFromEncodedString(recieveUsers.image),preferenceManager.getString(Constants.KEY_USER_ID), this, this);
+        chatAdapter = new ChatAdapter(chatMessages,getBitmapFromEncodedString(receiveUsers.image),preferenceManager.getString(Constants.KEY_USER_ID), this, this);
         binding.chatRecyclerView.setAdapter(chatAdapter);
         database = FirebaseFirestore.getInstance();
     }
@@ -90,58 +93,65 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
     private void sendMessage() {
         HashMap<String, Object> message = new HashMap<>();
         message.put(Constants.KEY_SENDER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
-        message.put(Constants.KEY_RECIEVER_ID,recieveUsers.id);
-        message.put(Constants.KEY_MESSAGE,binding.inputMessage.getText().toString());
+        message.put(Constants.KEY_RECEIVER_ID, receiveUsers.id);
         message.put(Constants.KEY_TIMESTAMP, new Date());
 
-        String s = Calendar.getInstance().getTimeInMillis() + "";
+        String s = null;
 
         try {
-            if(s.isEmpty())
-                s = getUniqueId();
+            s = getUniqueId();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        s += Calendar.getInstance().getTimeInMillis() + "";
+
         message.put(Constants.CHAT_UNIQUE_ID,s);
-        message.put(Constants.RECIVED_MESSAGE_EMOJI,"0");
+        message.put(Constants.RECEIVED_MESSAGE_EMOJI,"0");
 
         String checkSpace = binding.inputMessage.getText().toString();
 
         if(checkSpace.trim().isEmpty())return;
 
+        String encrypted = null;
+        try {
+            encrypted = encrypt(s, checkSpace);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        message.put(Constants.KEY_MESSAGE,encrypted);
+
         message.put(Constants.KEY_TIMESTAMP,new Date());
         database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
         if(conversationId!=null)
         {
-            updateConversation(binding.inputMessage.getText().toString());
+            updateConversation(checkSpace);
         }
         else {
             HashMap<String, Object> conversation = new HashMap<>();
             conversation.put(Constants.KEY_SENDER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
             conversation.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
             conversation.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
-            conversation.put(Constants.KEY_RECIEVER_ID,recieveUsers.id);
-            conversation.put(Constants.KEY_RECIEVER_NAME,recieveUsers.name);
-            conversation.put(Constants.KEY_RECIVER_IMAGE, recieveUsers.image);
-            conversation.put(Constants.KEY_LAST_MESSAGE, binding.inputMessage.getText().toString());
+            conversation.put(Constants.KEY_RECEIVER_ID, receiveUsers.id);
+            conversation.put(Constants.KEY_RECEIVER_NAME, receiveUsers.name);
+            conversation.put(Constants.KEY_RECEIVER_IMAGE, receiveUsers.image);
+            conversation.put(Constants.KEY_LAST_MESSAGE, checkSpace);
+            conversation.put(Constants.CHAT_UNIQUE_ID,s);
             addConversation(conversation);
         }
 
         MediaPlayer mp = MediaPlayer.create(this, R.raw.short_sms_tone);
-        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                mp.pause();
-                mp.stop();
-            }
+        mp.setOnCompletionListener(mp1 -> {
+            mp1.pause();
+            mp1.stop();
         });
         mp.start();
 
         if(!isReceiverOnline) {
             try {
                 JSONArray tokens = new JSONArray();
-                tokens.put(recieveUsers.token);
+                tokens.put(receiveUsers.token);
 
                 JSONObject data = new JSONObject();
                 data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
@@ -162,6 +172,22 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
         binding.inputMessage.setText(null);
     }
 
+    private String encrypt(String password, String s) throws Exception {
+        SecretKeySpec keySpec = generateKey(password);
+        Cipher c = Cipher.getInstance(AES);
+        c.init(Cipher.ENCRYPT_MODE,keySpec);
+        byte[] encVal = c.doFinal(s.getBytes());
+        return Base64.encodeToString(encVal,Base64.DEFAULT);
+    }
+
+    private SecretKeySpec generateKey(String password) throws Exception {
+        final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] bytes = password.getBytes("UTF-8");
+        digest.update(bytes,0,bytes.length);
+        byte[] key = digest.digest();
+        return new SecretKeySpec(key,AES);
+    }
+
     private void showToast(String message) {
         Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
     }
@@ -174,9 +200,9 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
                 if(response.isSuccessful()) {
                     try {
                         if(response.body()!=null) {
-                            JSONObject respnseJSON = new JSONObject(response.body());
-                            JSONArray results = respnseJSON.getJSONArray("results");
-                            if(respnseJSON.getInt("failure")==1) {
+                            JSONObject responseJSON = new JSONObject(response.body());
+                            JSONArray results = responseJSON.getJSONArray("results");
+                            if(responseJSON.getInt("failure")==1) {
                                 JSONObject error = (JSONObject) results.get(0);
                             }
                         }
@@ -184,7 +210,7 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
                     catch (JSONException e) {
                         e.printStackTrace();
                     }
-//                    showToast("Notification sent Succesfully");
+//                    showToast("Notification sent Successfully");
                 }
                 else {
                     showToast("Error: "+response.code());
@@ -198,22 +224,22 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
         });
     }
 
-    private void listenAvalabiblityOfReceiver() {
+    private void listenAvailabilityOfReceiver() {
         database.collection(Constants.KEY_COLLECTION_USERS).document(
-                recieveUsers.id).addSnapshotListener(ChatActivity.this, ((value, error) -> {
+                receiveUsers.id).addSnapshotListener(ChatActivity.this, ((value, error) -> {
                     if(error!=null) {
                         return;
                     }
                     if(value!=null) {
-                        if(value.getLong(Constants.KEY_AVAILABILTY)!=null)
+                        if(value.getLong(Constants.KEY_AVAILABILITY)!=null)
                         {
-                            int online = Objects.requireNonNull(value.getLong(Constants.KEY_AVAILABILTY)).intValue();
+                            int online = Objects.requireNonNull(value.getLong(Constants.KEY_AVAILABILITY)).intValue();
                             isReceiverOnline = online==1;
                         }
-                        recieveUsers.token = value.getString(Constants.KEY_FCM_TOKEN);
-                        if(recieveUsers.image==null) {
-                            recieveUsers.image = value.getString(Constants.KEY_IMAGE);
-                            chatAdapter.setRecieveProfileImage(getBitmapFromEncodedString(recieveUsers.image));
+                        receiveUsers.token = value.getString(Constants.KEY_FCM_TOKEN);
+                        if(receiveUsers.image==null) {
+                            receiveUsers.image = value.getString(Constants.KEY_IMAGE);
+                            chatAdapter.setReceiveProfileImage(getBitmapFromEncodedString(receiveUsers.image));
                             chatAdapter.notifyItemRangeChanged(0,chatMessages.size());
                         }
                     }
@@ -230,11 +256,11 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
     public void listenMessages() {
         database.collection(Constants.KEY_COLLECTION_CHAT)
                 .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
-                .whereEqualTo(Constants.KEY_RECIEVER_ID,recieveUsers.id)
+                .whereEqualTo(Constants.KEY_RECEIVER_ID, receiveUsers.id)
                 .addSnapshotListener(eventListener);
         database.collection(Constants.KEY_COLLECTION_CHAT)
-                .whereEqualTo(Constants.KEY_SENDER_ID, recieveUsers.id)
-                .whereEqualTo(Constants.KEY_RECIEVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                .whereEqualTo(Constants.KEY_SENDER_ID, receiveUsers.id)
+                .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
     }
 
@@ -255,12 +281,12 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
                 {
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
-                    chatMessage.recieverId = documentChange.getDocument().getString(Constants.KEY_RECIEVER_ID);
+                    chatMessage.recieverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
                     chatMessage.dateobject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.uniqueID = documentChange.getDocument().getString(Constants.CHAT_UNIQUE_ID);
-                    chatMessage.emojiReciever = documentChange.getDocument().getString(Constants.RECIVED_MESSAGE_EMOJI);
+                    chatMessage.emojiReciever = documentChange.getDocument().getString(Constants.RECEIVED_MESSAGE_EMOJI);
                     chatMessages.add(chatMessage);
                 }
             }
@@ -297,10 +323,9 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
         }
     }
 
-    private void loadRecieverDetails() {
-        recieveUsers = (Users) getIntent().getSerializableExtra(Constants.KEY_USER);
-//        assert recieveUsers != null;
-        binding.textname.setText(recieveUsers.name);
+    private void loadReceiverDetails() {
+        receiveUsers = (Users) getIntent().getSerializableExtra(Constants.KEY_USER);
+        binding.textname.setText(receiveUsers.name);
     }
 
 
@@ -327,18 +352,18 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
         if(chatMessages.size()!=0)
         {
             checkForConversationRemotely(preferenceManager.getString(Constants.KEY_USER_ID),
-                    recieveUsers.id);
+                    receiveUsers.id);
 
-            checkForConversationRemotely(recieveUsers.id,
+            checkForConversationRemotely(receiveUsers.id,
                     preferenceManager.getString(Constants.KEY_USER_ID));
         }
 
     }
 
-    private void checkForConversationRemotely(String senderId, String recieverId) {
+    private void checkForConversationRemotely(String senderId, String receiverId) {
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
                 .whereEqualTo(Constants.KEY_SENDER_ID, senderId)
-                .whereEqualTo(Constants.KEY_RECIEVER_ID,recieverId)
+                .whereEqualTo(Constants.KEY_RECEIVER_ID,receiverId)
                 .get()
                 .addOnCompleteListener(conversationOnCompleteListener);
     }
@@ -354,23 +379,46 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
     @Override
     protected void onResume() {
         super.onResume();
-        listenAvalabiblityOfReceiver();
+        listenAvailabilityOfReceiver();
     }
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
     public void removeItemAt(int position) {
-        chatMessages.get(position).message = "This Message was Deleted!!";
+        String encrypt = null;
+        try {
+            encrypt = encrypt(chatMessages.get(position).uniqueID,"This Message was Deleted!!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        chatMessages.get(position).message = encrypt;
         chatAdapter.notifyDataSetChanged();
-        updateConversation(chatMessages.get(chatMessages.size()-1).message);
+
+        String decrypted = null;
+        try {
+            decrypted = decrypt(chatMessages.get(position).uniqueID,chatMessages.get(position).message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        updateConversation(decrypted);
+    }
+    private String decrypt(String password, String s) throws Exception {
+        SecretKeySpec keySpec = generateKey(password);
+        Cipher c = Cipher.getInstance(AES);
+        c.init(Cipher.DECRYPT_MODE,keySpec);
+        byte[] decodedValue = Base64.decode(s,Base64.DEFAULT);
+        byte[] decVal = c.doFinal(decodedValue);
+        return new String(decVal);
     }
 
     private void setListeners() {
         binding.imageback.setOnClickListener(v-> onBackPressed());
         binding.layoutSend.setOnClickListener(v->sendMessage());
         binding.info.setOnClickListener(v -> {
-            Intent intent = new Intent(getApplicationContext(), Reciever_info.class);
-            intent.putExtra(Constants.KEY_USER, recieveUsers);
+            Intent intent = new Intent(getApplicationContext(), Receiver_info.class);
+            intent.putExtra(Constants.KEY_USER, receiveUsers);
             startActivity(intent);
         });
     }
@@ -387,7 +435,6 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-
     }
 
 }

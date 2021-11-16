@@ -37,7 +37,6 @@ public class MainActivity extends BaseActivity implements ConversationListener {
     private List<ChatMessage> conversations;
     private RecentConversationsAdapter conversationsAdapter;
     private FirebaseFirestore database;
-//    ShimmerFrameLayout container;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,19 +49,6 @@ public class MainActivity extends BaseActivity implements ConversationListener {
         getToken();
         setListeners();
         listenConversations();
-        shimmer();
-    }
-
-    private void shimmer() {
-
-//        container.showShimmer(true);
-//        container.startShimmer();
-//
-//        new Handler().postDelayed(() -> {
-//            container.stopShimmer();
-//            container.hideShimmer();
-//        }, 1000);
-
     }
 
     private void init() {
@@ -70,15 +56,11 @@ public class MainActivity extends BaseActivity implements ConversationListener {
         conversationsAdapter = new RecentConversationsAdapter(conversations, this);
         binding.conversationRecyclerView.setAdapter(conversationsAdapter);
         database = FirebaseFirestore.getInstance();
-//        container = binding.shimmerFrame;
     }
 
-    private void setListeners()
-    {
-        binding.signout.setOnClickListener(v->signout());
-        binding.fabnewChat.setOnClickListener(v->
-                startActivity(new Intent(getApplicationContext(),UsersActivity.class)));
-
+    private void setListeners() {
+        binding.signout.setOnClickListener(v-> sign_out());
+        binding.fabnewChat.setOnClickListener(v-> startActivity(new Intent(getApplicationContext(),UsersActivity.class)));
     }
 
     private void loadUserDetails() {
@@ -88,8 +70,7 @@ public class MainActivity extends BaseActivity implements ConversationListener {
         binding.imgprofile.setImageBitmap(bitmap);
     }
 
-
-    private void showToast(String message){
+    private void showToast(String message) {
         Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
     }
 
@@ -98,7 +79,7 @@ public class MainActivity extends BaseActivity implements ConversationListener {
                 .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
-                .whereEqualTo(Constants.KEY_RECIEVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
     }
 
@@ -115,14 +96,14 @@ public class MainActivity extends BaseActivity implements ConversationListener {
                 if(documentChange.getType()==DocumentChange.Type.ADDED)
                 {
                     String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
-                    String recieverId = documentChange.getDocument().getString(Constants.KEY_RECIEVER_ID);
+                    String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.senderId = senderId;
-                    chatMessage.recieverId = recieverId;
+                    chatMessage.recieverId = receiverId;
                     if(preferenceManager.getString(Constants.KEY_USER_ID).equals(senderId)) {
-                        chatMessage.conversationImage = documentChange.getDocument().getString(Constants.KEY_RECIVER_IMAGE);
-                        chatMessage.conversationName = documentChange.getDocument().getString(Constants.KEY_RECIEVER_NAME);
-                        chatMessage.conversationId = documentChange.getDocument().getString(Constants.KEY_RECIEVER_ID);
+                        chatMessage.conversationImage = documentChange.getDocument().getString(Constants.KEY_RECEIVER_IMAGE);
+                        chatMessage.conversationName = documentChange.getDocument().getString(Constants.KEY_RECEIVER_NAME);
+                        chatMessage.conversationId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     }
                     else {
                         chatMessage.conversationImage = documentChange.getDocument().getString(Constants.KEY_SENDER_IMAGE);
@@ -131,6 +112,7 @@ public class MainActivity extends BaseActivity implements ConversationListener {
                     }
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGE);
                     chatMessage.dateobject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                    chatMessage.uniqueID = documentChange.getDocument().getString(Constants.CHAT_UNIQUE_ID);
 
                     for(int i=0;i<conversations.size();i++)
                     {
@@ -146,8 +128,8 @@ public class MainActivity extends BaseActivity implements ConversationListener {
                     for(int i=0;i<conversations.size();i++)
                     {
                         String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
-                        String recieverId = documentChange.getDocument().getString(Constants.KEY_RECIEVER_ID);
-                        if(conversations.get(i).senderId.equals(senderId) && conversations.get(i).recieverId.equals(recieverId))
+                        String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+                        if(conversations.get(i).senderId.equals(senderId) && conversations.get(i).recieverId.equals(receiverId))
                         {
                             conversations.get(i).message = documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGE);
                             conversations.get(i).dateobject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
@@ -162,9 +144,7 @@ public class MainActivity extends BaseActivity implements ConversationListener {
             binding.conversationRecyclerView.smoothScrollToPosition(0);
             binding.conversationRecyclerView.setVisibility(View.VISIBLE);
             binding.progressbar.setVisibility(View.GONE);
-//            line xyz
         }
-//        if any problem occur here put the below line in line xyz
     };
 
     private void getToken()
@@ -180,10 +160,9 @@ public class MainActivity extends BaseActivity implements ConversationListener {
                 .document(preferenceManager.getString(Constants.KEY_USER_ID));
         documentReference.update(Constants.KEY_FCM_TOKEN,token)
                 .addOnFailureListener(e->showToast("Unable to Update Token"));
-
     }
 
-    private void signout() {
+    private void sign_out() {
         showToast("Signing out ...");
         FirebaseFirestore database = FirebaseFirestore.getInstance();
         DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS)
@@ -205,4 +184,5 @@ public class MainActivity extends BaseActivity implements ConversationListener {
         intent.putExtra(Constants.KEY_USER, users);
         startActivity(intent);
     }
+
 }

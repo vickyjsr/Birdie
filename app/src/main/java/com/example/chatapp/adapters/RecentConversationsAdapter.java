@@ -3,6 +3,7 @@ package com.example.chatapp.adapters;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -14,7 +15,11 @@ import com.example.chatapp.listeners.ConversationListener;
 import com.example.chatapp.models.ChatMessage;
 import com.example.chatapp.models.Users;
 
+import java.security.MessageDigest;
 import java.util.List;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 
 public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConversationsAdapter.ConversionViewHolder> {
 
@@ -45,9 +50,10 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
         return chatMessages.size();
     }
 
-
     class ConversionViewHolder extends RecyclerView.ViewHolder {
         ItemContainerRecentConversionBinding binding;
+        private final String AES = "AES";
+
         ConversionViewHolder(ItemContainerRecentConversionBinding itemContainerRecentConversionBinding)
         {
             super(itemContainerRecentConversionBinding.getRoot());
@@ -58,6 +64,7 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
             binding.imageProfile.setImageBitmap(getConversionImage(chatMessage.conversationImage));
             binding.txtname.setText(chatMessage.conversationName);
             binding.textRecentMessage.setText(chatMessage.message);
+
             binding.getRoot().setOnClickListener(v-> {
                 Users users = new Users();
                 users.id = chatMessage.conversationId;
@@ -67,6 +74,24 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
             });
         }
 
+        private String decrypt(String password, String s) throws Exception {
+            Log.d("decrypt", "decrypt: inside");
+            SecretKeySpec keySpec = generateKey(password);
+            Cipher c = Cipher.getInstance(AES);
+            c.init(Cipher.DECRYPT_MODE,keySpec);
+            byte[] decodedValue = Base64.decode(s,Base64.DEFAULT);
+            byte[] decVal = c.doFinal(decodedValue);
+            return new String(decVal);
+        }
+
+        private SecretKeySpec generateKey(String password) throws Exception {
+            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = password.getBytes("UTF-8");
+            digest.update(bytes,0,bytes.length);
+            byte[] key = digest.digest();
+            return new SecretKeySpec(key,AES);
+        }
+
     }
 
     private Bitmap getConversionImage(String encodedImage)
@@ -74,5 +99,7 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
         byte[] bytes = Base64.decode(encodedImage,Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes,0,bytes.length);
     }
+
+
 
 }

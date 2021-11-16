@@ -27,13 +27,13 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        documentReference.update(Constants.KEY_AVAILABILTY,0);
+        documentReference.update(Constants.KEY_AVAILABILITY,0);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        documentReference.update(Constants.KEY_AVAILABILTY,1);
+        documentReference.update(Constants.KEY_AVAILABILITY,1);
     }
 
 }
