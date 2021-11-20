@@ -2,13 +2,12 @@ package com.example.chatapp.activities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Base64;
 import android.view.View;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.chatapp.adapters.RecentConversationsAdapter;
 import com.example.chatapp.databinding.ActivityMainBinding;
 import com.example.chatapp.listeners.ConversationListener;
@@ -65,9 +64,10 @@ public class MainActivity extends BaseActivity implements ConversationListener {
 
     private void loadUserDetails() {
         binding.txtname.setText(preferenceManager.getString(Constants.KEY_NAME));
-        byte[] bytes = Base64.decode(preferenceManager.getString(Constants.KEY_IMAGE), Base64.DEFAULT);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
-        binding.imgprofile.setImageBitmap(bitmap);
+
+        Glide.with(this)
+                .load((preferenceManager.getString(Constants.KEY_IMAGE)))
+                .into(binding.imgprofile);
     }
 
     private void showToast(String message) {

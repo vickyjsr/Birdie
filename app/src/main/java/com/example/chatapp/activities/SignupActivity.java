@@ -7,37 +7,63 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.chatapp.databinding.ActivitySignupBinding;
 import com.example.chatapp.utilities.Constants;
 import com.example.chatapp.utilities.PreferenceManager;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.Random;
+import java.util.UUID;
 
 public class SignupActivity extends AppCompatActivity {
 
     private ActivitySignupBinding binding;
     private PreferenceManager preferenceManager;
-    private String encodedImage;
+    private Uri encodedImage;
     private MaterialButton btnSignup;
+    FirebaseStorage storage;
+    StorageReference storageReference;
+    String url = "";
+
+    public SignupActivity() {
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySignupBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReference("ImageFolder");
         preferenceManager = new PreferenceManager(getApplicationContext());
         setListeners();
 
@@ -58,6 +84,24 @@ public class SignupActivity extends AppCompatActivity {
         });
     }
 
+    private final ActivityResultLauncher<Intent> pickImg = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if(result.getResultCode()==RESULT_OK)
+                {
+                    if(result.getData()!=null)
+                    {
+                        encodedImage = result.getData().getData();
+                        Uri imageUri = result.getData().getData();
+                        Glide.with(this)
+                                .load(imageUri)
+                                .into(binding.imageProfile);
+                        binding.txtAddimg.setVisibility(View.GONE);
+                    }
+                }
+            }
+    );
+
     private void showToast(String message){
         Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
     }
@@ -69,61 +113,70 @@ public class SignupActivity extends AppCompatActivity {
         user.put(Constants.KEY_NAME,binding.inputName.getText().toString());
         user.put(Constants.KEY_EMAIL,binding.inputEmail.getText().toString());
         user.put(Constants.KEY_PASSWORD,binding.inputPassword.getText().toString());
-        user.put(Constants.KEY_IMAGE, encodedImage);
+        Random random = new Random();
+        StorageReference sRef = storage.getReference().child("picture/" + random.nextInt(100));
 
-        database.collection(Constants.KEY_COLLECTION_USERS)
-                .add(user)
-                .addOnSuccessListener(documentReference -> {
-                    loading(false);
-                    preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
-                    preferenceManager.putString(Constants.KEY_USER_ID,documentReference.getId());
-                    preferenceManager.putString(Constants.KEY_NAME,binding.inputName.getText().toString());
-                    preferenceManager.putString(Constants.KEY_IMAGE,encodedImage);
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
 
+        sRef.putFile(encodedImage)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        sRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                url = uri.toString();
+                                user.put(Constants.KEY_IMAGE, url);
+//                                Log.d("URI", "onSuccess: "+url);
+                                loading(false);
+                                database.collection(Constants.KEY_COLLECTION_USERS)
+                                        .add(user)
+                                        .addOnSuccessListener(documentReference -> {
+                                            preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
+                                            preferenceManager.putString(Constants.KEY_USER_ID,documentReference.getId());
+                                            preferenceManager.putString(Constants.KEY_NAME,binding.inputName.getText().toString());
+
+                                            preferenceManager.putString(Constants.KEY_IMAGE,url);
+                                            database.collection(Constants.KEY_COLLECTION_USERS)
+                                                    .whereEqualTo(Constants.KEY_USER_ID,preferenceManager.getString(Constants.KEY_USER_ID))
+                                                    .get().addOnCompleteListener(task -> {
+                                                        if (task.isSuccessful() && !Objects.requireNonNull(task.getResult()).isEmpty()) {
+                                                            DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                                                            String documentID = documentSnapshot.getId();
+
+                                                            database.collection(Constants.KEY_COLLECTION_USERS)
+                                                                    .document(documentID)
+                                                                    .update(Constants.KEY_IMAGE, url)
+                                                                    .addOnSuccessListener(aVoid -> {}).addOnFailureListener(e -> { });
+                                                        }
+                                                    });
+
+                                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                            startActivity(intent);
+
+                                        })
+                                        .addOnFailureListener(exception->{
+                                            loading(false);
+                                            showToast(exception.getMessage());
+                                        });
+                            }
+                        });
+                    }
                 })
-                .addOnFailureListener(exception->{
-                    loading(false);
-                    showToast(exception.getMessage());
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+
+                    }
                 });
 
+
+
+
+
+
     }
 
-    private String encodeImage(Bitmap bitmap)
-    {
-        int previewWidth = 150;
-        int previewHeight = bitmap.getHeight()*previewWidth/bitmap.getWidth();
-        Bitmap previewBitmap = Bitmap.createScaledBitmap(bitmap,previewHeight,previewWidth,false);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        previewBitmap.compress(Bitmap.CompressFormat.JPEG,50,byteArrayOutputStream);
-        byte[] bytes = byteArrayOutputStream.toByteArray();
-
-        return Base64.encodeToString(bytes, Base64.DEFAULT);
-    }
-
-    private final ActivityResultLauncher<Intent> pickImg = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if(result.getResultCode()==RESULT_OK)
-                {
-                    if(result.getData()!=null)
-                    {
-                        Uri imagUri = result.getData().getData();
-                        try {
-                            InputStream inputStream = getContentResolver().openInputStream(imagUri);
-                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                            binding.imageProfile.setImageBitmap(bitmap);
-                            binding.txtAddimg.setVisibility(View.GONE);
-                            encodedImage = encodeImage(bitmap);
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-    );
 
     private Boolean isValidDetails() {
         if(encodedImage==null)

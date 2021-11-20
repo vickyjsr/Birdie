@@ -1,14 +1,14 @@
 package com.example.chatapp.adapters;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Base64;
+import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.chatapp.databinding.ItemContainerUserBinding;
 import com.example.chatapp.listeners.UserListener;
 import com.example.chatapp.models.Users;
@@ -54,17 +54,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         {
             binding.txtname.setText(users.name);
             binding.textEmail.setText(users.email);
-            binding.imageProfile.setImageBitmap(getUserImage(users.image));
+            Glide.with(binding.imageProfile.getContext()).load(Uri.parse(users.image)).into(binding.imageProfile);
+
             binding.txtname.setText(users.name);
             binding.getRoot().setOnClickListener(v->userListener.onUserClicked(users));
         }
 
     }
 
-    private Bitmap getUserImage(String encodedimage)
-    {
-        byte[] bytes = Base64.decode(encodedimage,Base64.DEFAULT);
-        return BitmapFactory.decodeByteArray(bytes,0,bytes.length);
-    }
+
 
 }

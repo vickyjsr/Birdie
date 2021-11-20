@@ -1,14 +1,17 @@
-package com.example.chatapp;
+package com.example.chatapp.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.example.chatapp.R;
 import com.example.chatapp.models.Users;
 import com.example.chatapp.utilities.Constants;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,7 +31,6 @@ public class Receiver_info extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reciever_info);
 
-
         recieveUsers = (Users) getIntent().getSerializableExtra(Constants.KEY_USER);
         database = FirebaseFirestore.getInstance();
 
@@ -36,7 +38,10 @@ public class Receiver_info extends AppCompatActivity {
         name = findViewById(R.id.textname);
         online = findViewById(R.id.textOnline);
 
-        profileImage.setImageBitmap(getBitmapFromEncodedString(recieveUsers.image));
+        Glide.with(this)
+                .load(Uri.parse(recieveUsers.image))
+                .into(profileImage);
+
         name.setText(recieveUsers.name);
 
         database.collection(Constants.KEY_COLLECTION_USERS).document(
@@ -59,16 +64,5 @@ public class Receiver_info extends AppCompatActivity {
                 online.setText("Offline");
             }
         }));
-    }
-    private Bitmap getBitmapFromEncodedString(String encodedimage)
-    {
-        if(encodedimage!=null)
-        {
-            byte[] bytes = Base64.decode(encodedimage,Base64.DEFAULT);
-            return BitmapFactory.decodeByteArray(bytes,0,bytes.length);
-        }
-        else {
-            return null;
-        }
     }
 }

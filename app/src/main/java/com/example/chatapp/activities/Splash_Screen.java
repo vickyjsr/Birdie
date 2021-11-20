@@ -1,4 +1,4 @@
-package com.example.chatapp;
+package com.example.chatapp.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import com.example.chatapp.activities.SignInActivity;
+import com.example.chatapp.R;
 
 public class Splash_Screen extends AppCompatActivity {
 

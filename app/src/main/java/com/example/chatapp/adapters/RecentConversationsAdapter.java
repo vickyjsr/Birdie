@@ -1,7 +1,7 @@
 package com.example.chatapp.adapters;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.Context;
+import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.chatapp.databinding.ItemContainerRecentConversionBinding;
 import com.example.chatapp.listeners.ConversationListener;
 import com.example.chatapp.models.ChatMessage;
@@ -61,7 +62,8 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
         }
 
         void setData(ChatMessage chatMessage) {
-            binding.imageProfile.setImageBitmap(getConversionImage(chatMessage.conversationImage));
+
+            Glide.with(binding.imageProfile.getContext()).load((chatMessage.conversationImage)).into(binding.imageProfile);
             binding.txtname.setText(chatMessage.conversationName);
             binding.textRecentMessage.setText(chatMessage.message);
 
@@ -93,13 +95,5 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
         }
 
     }
-
-    private Bitmap getConversionImage(String encodedImage)
-    {
-        byte[] bytes = Base64.decode(encodedImage,Base64.DEFAULT);
-        return BitmapFactory.decodeByteArray(bytes,0,bytes.length);
-    }
-
-
 
 }

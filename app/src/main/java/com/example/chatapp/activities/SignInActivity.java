@@ -25,6 +25,7 @@ public class SignInActivity extends AppCompatActivity {
         binding = ActivitySignInBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         preferenceManager = new PreferenceManager(getApplicationContext());
+
         if(preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN))
         {
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
@@ -37,9 +38,7 @@ public class SignInActivity extends AppCompatActivity {
 
     private void setListeners()
     {
-        binding.textregister.setOnClickListener(v -> {
-            startActivity(new Intent(getApplicationContext(),SignupActivity.class));
-        });
+        binding.textregister.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(),SignupActivity.class)));
         binding.buttonSignin.setOnClickListener(v->{
             if(isValidDetails())
             {

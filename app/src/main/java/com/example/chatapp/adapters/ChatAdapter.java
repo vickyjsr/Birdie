@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.chatapp.R;
 import com.example.chatapp.databinding.ItemContainerRecievedMessageBinding;
 import com.example.chatapp.databinding.ItemContainerSentMessageBinding;
@@ -33,21 +35,21 @@ import javax.crypto.spec.SecretKeySpec;
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final List<ChatMessage> chatMessages;
-    private Bitmap receiveProfileImage;
+    private Uri receiveProfileImage;
     private final String senderId;
     private final FirebaseFirestore database = FirebaseFirestore.getInstance();
     private final Context context;
     private final SingleChatRemove singleChatRemove;
 
-    public void setReceiveProfileImage(Bitmap bitmap) {
-        receiveProfileImage = bitmap;
+    public void setReceiveProfileImage(Uri uri) {
+        receiveProfileImage = uri;
     }
 
     public static final int VIEW_TYPE_SENT = 1;
     public static final int VIEW_TYPE_RECEIVED = 2;
     private final String AES = "AES";
 
-    public ChatAdapter(List<ChatMessage> chatMessages, Bitmap receiveProfileImage, String senderId, Context context, SingleChatRemove singleChatRemove) {
+    public ChatAdapter(List<ChatMessage> chatMessages, Uri receiveProfileImage, String senderId, Context context, SingleChatRemove singleChatRemove) {
         this.chatMessages = chatMessages;
         this.receiveProfileImage = receiveProfileImage;
         this.senderId = senderId;
@@ -70,7 +72,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         byte[] key = digest.digest();
         return new SecretKeySpec(key,AES);
     }
-
 
     public void delete_A_Chat(int position, int type) {
 
@@ -99,9 +100,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                 .addOnSuccessListener(aVoid -> {
                                     singleChatRemove.removeItemAt(position);
 //                                    Toast.makeText(context, "Deleted!!", Toast.LENGTH_SHORT).show();
-                                }).addOnFailureListener(e -> {
-
-                                });
+                                }).addOnFailureListener(e -> {});
                     }
                 });
     }
@@ -349,7 +348,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             binding = itemContainerRecievedMessageBinding;
         }
 
-        void setData(ChatMessage chatMessage,Bitmap receiverProfileImage) {
+        void setData(ChatMessage chatMessage,Uri receiverProfileImage) {
 
             String decrypted = null;
             try {
@@ -394,7 +393,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 binding.reaction.setText(getUnicodeToEmoji(x));
 
             if(receiverProfileImage!=null) {
-                binding.imageProfile.setImageBitmap(receiverProfileImage);
+                Glide.with(binding.imageProfile.getContext()).load(receiverProfileImage).into(binding.imageProfile);
             }
         }
 

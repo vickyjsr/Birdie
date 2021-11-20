@@ -53,5 +53,12 @@
         app:layout_constraintStart_toStartOf="@id/textmessage"
         app:layout_constraintTop_toBottomOf="@+id/textmessage"
         />
+<!--    <TextView-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:visibility="gone"-->
+<!--        android:id="@+id/txtSeen"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/textmessage"-->
+<!--        />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

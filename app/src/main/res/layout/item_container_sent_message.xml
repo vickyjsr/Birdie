@@ -43,4 +43,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textmessage"
         />
+
+<!--    <TextView-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Seen"-->
+<!--        android:id="@+id/txtSeen"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/textmessage"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintEnd_toStartOf="@id/textdateTime"-->
+<!--        />-->
 </androidx.constraintlayout.widget.ConstraintLayout>

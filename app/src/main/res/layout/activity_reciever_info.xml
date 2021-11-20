@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/_5sdp"
-    tools:context=".Receiver_info">
+    tools:context=".activities.Receiver_info">
 
     <ImageView
         android:id="@+id/rProfile_image"

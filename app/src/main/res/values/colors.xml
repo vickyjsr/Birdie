@@ -15,4 +15,29 @@
     <color name="light_blue_A400">#FF00B0FF</color>
     <color name="black_overlay">#66000000</color>
     <color name="appnamecolor">#D5D4D4</color>
+
+<!--    dots inactive colors-->
+    <color name="dark_one">#dcdcdc</color>
+    <color name="dark_two">#dcdcdc</color>
+    <color name="dark_three">#dcdcdc</color>
+
+    <!--    dots inactive colors-->
+    <color name="orange_one">#e65252</color>
+    <color name="orange_two">#e65252</color>
+    <color name="orange_three">#e65252</color>
+
+<!--    active array items-->
+    <array name="active">
+        <item>@color/orange_one</item>
+        <item>@color/orange_two</item>
+        <item>@color/orange_three</item>
+    </array>
+
+    <!--    active array items-->
+    <array name="inactive">
+        <item>@color/dark_one</item>
+        <item>@color/dark_two</item>
+        <item>@color/dark_three</item>
+    </array>
+
 </resources>
