@@ -176,8 +176,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     private void react(int position, int itemViewType) {
-//        first update the data emoji in firebase
-//        singleChatRemove.reactionListener(position);
         final Dialog dialog = new Dialog(context);
         dialog.setContentView(R.layout.custom_dialog_reaction);
         ImageView close = dialog.findViewById(R.id.iv_add);

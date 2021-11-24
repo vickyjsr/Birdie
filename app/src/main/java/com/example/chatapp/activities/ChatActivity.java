@@ -99,7 +99,6 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
         HashMap<String, Object> message = new HashMap<>();
         message.put(Constants.KEY_SENDER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
         message.put(Constants.KEY_RECEIVER_ID, receiveUsers.id);
-        message.put(Constants.KEY_TIMESTAMP, new Date());
 
         String s = null;
 
@@ -146,7 +145,7 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
             addConversation(conversation);
         }
 
-        MediaPlayer mp = MediaPlayer.create(this, R.raw.short_sms_tone);
+        MediaPlayer mp = MediaPlayer.create(this, R.raw.messagesent);
         mp.setOnCompletionListener(mp1 -> {
             mp1.pause();
             mp1.stop();
@@ -233,20 +232,17 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
     private void seenMessages(String uid) {
         database.collection(Constants.KEY_COLLECTION_CHAT)
                 .whereEqualTo(Constants.KEY_USER_ID, uid)
-                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful() && !Objects.requireNonNull(task.getResult()).isEmpty()) {
-                    DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-                    String documentID = documentSnapshot.getId();
+                .get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && !Objects.requireNonNull(task.getResult()).isEmpty()) {
+                        DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                        String documentID = documentSnapshot.getId();
 
-//                    database.collection(Constants.KEY_COLLECTION_CHAT)
-//                            .document(documentID)
-//                            .update(Constants.RECEIVED_MESSAGE_EMOJI,emoji)
+    //                    database.collection(Constants.KEY_COLLECTION_CHAT)
+    //                            .document(documentID)
+    //                            .update(Constants.RECEIVED_MESSAGE_EMOJI,emoji)
 
-                }
-            }
-        });
+                    }
+                });
     }
 
     private void listenAvailabilityOfReceiver() {
@@ -256,8 +252,7 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
                         return;
                     }
                     if(value!=null) {
-                        if(value.getLong(Constants.KEY_AVAILABILITY)!=null)
-                        {
+                        if(value.getLong(Constants.KEY_AVAILABILITY)!=null) {
                             int online = Objects.requireNonNull(value.getLong(Constants.KEY_AVAILABILITY)).intValue();
                             isReceiverOnline = online==1;
                         }
@@ -293,12 +288,10 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
 
     @SuppressLint("NotifyDataSetChanged")
     private final EventListener<QuerySnapshot> eventListener = (value, error)->{
-        if(error!=null)
-        {
+        if(error!=null) {
             return;
         }
-        if(value!=null)
-        {
+        if(value!=null) {
             int count = chatMessages.size();
             for(DocumentChange documentChange:value.getDocumentChanges())
             {
@@ -378,13 +371,10 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
                 .addOnCompleteListener(conversationOnCompleteListener);
     }
 
-    private final OnCompleteListener<QuerySnapshot> conversationOnCompleteListener = new OnCompleteListener<QuerySnapshot>() {
-        @Override
-        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-            if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
-                DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-                conversationId = documentSnapshot.getId();
-            }
+    private final OnCompleteListener<QuerySnapshot> conversationOnCompleteListener = task -> {
+        if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
+            DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+            conversationId = documentSnapshot.getId();
         }
     };
 
@@ -406,6 +396,7 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
 
         chatMessages.get(position).message = encrypt;
         chatAdapter.notifyDataSetChanged();
+        binding.chatRecyclerView.smoothScrollToPosition(position);
 
         String decrypted = null;
         try {
@@ -413,7 +404,7 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        if(position==chatMessages.size()-1)
         updateConversation(decrypted);
     }
 
