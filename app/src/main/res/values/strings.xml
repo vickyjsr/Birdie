@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">Chatsy</string>
-    <string name="title_activity_splash_screen1">Splash_Screen1</string>
+    <string name="app_name">Birdie</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

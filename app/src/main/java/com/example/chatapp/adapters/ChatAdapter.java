@@ -2,7 +2,6 @@ package com.example.chatapp.adapters;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
