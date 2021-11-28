@@ -22,6 +22,7 @@
         android:id="@+id/textmessage"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:autoLink="all"
         android:background="@drawable/background_recieved_message"
         android:paddingStart="@dimen/_12sdp"
         android:paddingTop="@dimen/_8sdp"

@@ -74,7 +74,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public void delete_A_Chat(int position, int type) {
 
-        if(type== VIEW_TYPE_RECEIVED)return;
+        if(type == VIEW_TYPE_RECEIVED)return;
 
         ChatMessage message = chatMessages.get(position);
         String encrypt = null;

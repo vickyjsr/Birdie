@@ -9,6 +9,7 @@
 
     <TextView
         android:id="@+id/textmessage"
+        android:autoLink="all"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@drawable/background_sent_message"

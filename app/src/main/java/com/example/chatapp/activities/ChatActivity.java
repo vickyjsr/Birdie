@@ -284,8 +284,6 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
                 .addSnapshotListener(eventListener);
     }
 
-
-
     @SuppressLint("NotifyDataSetChanged")
     private final EventListener<QuerySnapshot> eventListener = (value, error)->{
         if(error!=null) {
@@ -293,6 +291,7 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
         }
         if(value!=null) {
             int count = chatMessages.size();
+            boolean f = false;int pos = -1;
             for(DocumentChange documentChange:value.getDocumentChanges())
             {
                 if(documentChange.getType()==DocumentChange.Type.ADDED)
@@ -307,12 +306,35 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
                     chatMessage.emojiReciever = documentChange.getDocument().getString(Constants.RECEIVED_MESSAGE_EMOJI);
                     chatMessages.add(chatMessage);
                 }
+                else if(documentChange.getType() == DocumentChange.Type.MODIFIED) {
+                    for(int i=0;i<chatMessages.size();i++)
+                    {
+                        String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
+                        String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+                        if(chatMessages.get(i).uniqueID.equals(documentChange.getDocument().getString(Constants.CHAT_UNIQUE_ID)))
+                        {
+//                            showToast("in here");
+                            chatMessages.get(i).message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
+                            chatMessages.get(i).emojiReciever = documentChange.getDocument().getString(Constants.RECEIVED_MESSAGE_EMOJI);
+                            pos = i;
+                            f = true;
+                            break;
+                        }
+                    }
+                }
             }
             Collections.sort(chatMessages, Comparator.comparing(obj -> obj.dateobject));
             if(count==0)
             {
                 chatAdapter.notifyDataSetChanged();
-            } else {
+            }
+            else if(f)
+            {
+//                showToast("in here 2");
+                chatAdapter.notifyDataSetChanged();
+                f = false;
+            }
+            else {
                 chatAdapter.notifyItemRangeChanged(chatMessages.size(), chatMessages.size());
                 binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size()-1);
             }
@@ -404,7 +426,7 @@ public class ChatActivity extends BaseActivity implements SingleChatRemove {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(position==chatMessages.size()-1)
+//        if(position==chatMessages.size()-1)
         updateConversation(decrypted);
     }
 
