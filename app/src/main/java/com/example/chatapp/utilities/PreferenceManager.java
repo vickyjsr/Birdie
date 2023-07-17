@@ -8,14 +8,12 @@ public class PreferenceManager {
     private final SharedPreferences sharedPreferences;
     private final SharedPreferences.Editor editor;
 
-    public PreferenceManager(Context context)
-    {
+    public PreferenceManager(Context context) {
         sharedPreferences = context.getSharedPreferences(Constants.KEY_PREFERENCE_NAME, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
     }
 
-    public void putBoolean(String key,Boolean value)
-    {
+    public void putBoolean(String key, Boolean value) {
         editor.putBoolean(key, value);
         editor.apply();
     }
@@ -26,14 +24,14 @@ public class PreferenceManager {
     }
 
     public boolean isFirstTimeLaunch() {
-        return sharedPreferences.getBoolean(Constants.KEY_PREFERENCE_IS_FIRST_TIME,false);
+        return sharedPreferences.getBoolean(Constants.KEY_PREFERENCE_IS_FIRST_TIME, false);
     }
 
     public Boolean getBoolean(String key) {
         return sharedPreferences.getBoolean(key, false);
     }
 
-    public void putString(String key,String value) {
+    public void putString(String key, String value) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(key, value);
         editor.apply();
@@ -43,14 +41,9 @@ public class PreferenceManager {
         return sharedPreferences.getString(key, null);
     }
 
-
-    public void clear()
-    {
+    public void clear() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.apply();
     }
-
-
-
 }

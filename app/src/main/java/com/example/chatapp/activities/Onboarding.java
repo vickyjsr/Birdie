@@ -26,7 +26,7 @@ public class Onboarding extends AppCompatActivity {
     private LinearLayout layout_dots;
     private PreferenceManager preferenceManager;
     private int[] layouts;
-    private TextView []dots;
+    private TextView[] dots;
     private MyViewPager myViewPagerAdapter;
 
     @Override
@@ -36,7 +36,7 @@ public class Onboarding extends AppCompatActivity {
 
         preferenceManager = new PreferenceManager(this);
 
-        if(preferenceManager.isFirstTimeLaunch()) {
+        if (preferenceManager.isFirstTimeLaunch()) {
             launchSignInScreen();
             finish();
         }
@@ -45,18 +45,13 @@ public class Onboarding extends AppCompatActivity {
         viewPager = findViewById(R.id.viewPager);
         layout_dots = findViewById(R.id.pageDots);
 
-        layouts = new int[] {
-                R.layout.intro_1,
-                R.layout.intro_2,
-                R.layout.intro_3
-        };
+        layouts = new int[]{R.layout.intro_1, R.layout.intro_2, R.layout.intro_3};
 
         tvNext.setOnClickListener(v -> {
             int curr = getItem(+1);
-            if(curr<layouts.length) {
+            if (curr < layouts.length) {
                 viewPager.setCurrentItem(curr);
-            }
-            else {
+            } else {
                 launchSignInScreen();
             }
         });
@@ -66,7 +61,6 @@ public class Onboarding extends AppCompatActivity {
         viewPager.addOnPageChangeListener(onPageChangeListener);
 
         addBottomDots(0);
-
     }
 
     ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
@@ -78,10 +72,9 @@ public class Onboarding extends AppCompatActivity {
         @Override
         public void onPageSelected(int position) {
             addBottomDots(position);
-            if(position==layouts.length-1) {
+            if (position == layouts.length - 1) {
                 tvNext.setText("Start");
-            }
-            else {
+            } else {
                 tvNext.setText("Next");
             }
         }
@@ -90,16 +83,15 @@ public class Onboarding extends AppCompatActivity {
         public void onPageScrollStateChanged(int state) {
 
         }
-
     };
 
     private void addBottomDots(int currentPage) {
         dots = new TextView[layouts.length];
-        int []activeColors = getResources().getIntArray(R.array.active);
-        int []inactiveColors = getResources().getIntArray(R.array.inactive);
+        int[] activeColors = getResources().getIntArray(R.array.active);
+        int[] inactiveColors = getResources().getIntArray(R.array.inactive);
         layout_dots.removeAllViews();
 
-        for(int i=0;i<dots.length;i++) {
+        for (int i = 0; i < dots.length; i++) {
             dots[i] = new TextView(this);
             dots[i].setText(Html.fromHtml("&#8226"));
             dots[i].setTextSize(40);
@@ -107,7 +99,7 @@ public class Onboarding extends AppCompatActivity {
             layout_dots.addView(dots[i]);
         }
 
-        if(dots.length>0) {
+        if (dots.length > 0) {
             dots[currentPage].setTextColor(activeColors[currentPage]);
         }
 
@@ -137,7 +129,7 @@ public class Onboarding extends AppCompatActivity {
 
         @Override
         public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
-            return view==object;
+            return view == object;
         }
 
         @Override
@@ -148,12 +140,12 @@ public class Onboarding extends AppCompatActivity {
     }
 
     private int getItem(int i) {
-        return viewPager.getCurrentItem()+1;
+        return viewPager.getCurrentItem() + 1;
     }
 
     private void launchSignInScreen() {
         preferenceManager.setIsfirstTimeLaunch(true);
-        startActivity(new Intent(Onboarding.this,Splash_Screen.class));
+        startActivity(new Intent(Onboarding.this, Splash_Screen.class));
         finish();
     }
 }

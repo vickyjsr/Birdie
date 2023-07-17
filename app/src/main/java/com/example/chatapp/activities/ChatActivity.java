@@ -61,7 +61,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-@RequiresApi(api = Build.VERSION_CODES.N)
 public class ChatActivity extends BaseActivity implements SingleChatRemove {
 
     private ActivityChatBinding binding;

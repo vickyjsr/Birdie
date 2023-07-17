@@ -35,10 +35,7 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
     @NonNull
     @Override
     public ConversionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ConversionViewHolder(
-                ItemContainerRecentConversionBinding.inflate(
-                        LayoutInflater.from(parent.getContext()),parent,
-                        false));
+        return new ConversionViewHolder(ItemContainerRecentConversionBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -55,8 +52,7 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
         ItemContainerRecentConversionBinding binding;
         private final String AES = "AES";
 
-        ConversionViewHolder(ItemContainerRecentConversionBinding itemContainerRecentConversionBinding)
-        {
+        ConversionViewHolder(ItemContainerRecentConversionBinding itemContainerRecentConversionBinding) {
             super(itemContainerRecentConversionBinding.getRoot());
             binding = itemContainerRecentConversionBinding;
         }
@@ -67,7 +63,7 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
             binding.txtname.setText(chatMessage.conversationName);
             binding.textRecentMessage.setText(chatMessage.message);
 
-            binding.getRoot().setOnClickListener(v-> {
+            binding.getRoot().setOnClickListener(v -> {
                 Users users = new Users();
                 users.id = chatMessage.conversationId;
                 users.name = chatMessage.conversationName;
@@ -80,8 +76,8 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
             Log.d("decrypt", "decrypt: inside");
             SecretKeySpec keySpec = generateKey(password);
             Cipher c = Cipher.getInstance(AES);
-            c.init(Cipher.DECRYPT_MODE,keySpec);
-            byte[] decodedValue = Base64.decode(s,Base64.DEFAULT);
+            c.init(Cipher.DECRYPT_MODE, keySpec);
+            byte[] decodedValue = Base64.decode(s, Base64.DEFAULT);
             byte[] decVal = c.doFinal(decodedValue);
             return new String(decVal);
         }
@@ -89,11 +85,9 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
         private SecretKeySpec generateKey(String password) throws Exception {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] bytes = password.getBytes("UTF-8");
-            digest.update(bytes,0,bytes.length);
+            digest.update(bytes, 0, bytes.length);
             byte[] key = digest.digest();
-            return new SecretKeySpec(key,AES);
+            return new SecretKeySpec(key, AES);
         }
-
     }
-
 }

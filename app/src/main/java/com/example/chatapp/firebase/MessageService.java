@@ -1,14 +1,17 @@
 package com.example.chatapp.firebase;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -39,31 +42,29 @@ public class MessageService extends FirebaseMessagingService {
         users.token = remoteMessage.getData().get(Constants.KEY_FCM_TOKEN);
         users.image = remoteMessage.getData().get(Constants.KEY_IMAGE);
 
-
         int notificationId = new Random().nextInt();
         String channelId = "chat_message";
 
         Intent intent = new Intent(this, ChatActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.putExtra(Constants.KEY_USER,users);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT );
+        intent.putExtra(Constants.KEY_USER, users);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId);
         builder.setSmallIcon(R.drawable.ic_message_icon);
         builder.setContentTitle(users.name);
         builder.setAutoCancel(true);
         builder.setLights(Color.BLUE, 500, 500);
-        long[] pattern = {500,500,500,500,500,500,500,500,500};
+        long[] pattern = {500, 500, 500, 500, 500, 500, 500, 500, 500};
         builder.setVibrate(pattern);
         builder.setContentText(remoteMessage.getData().get(Constants.KEY_MESSAGE));
-        builder.setStyle(new NotificationCompat.BigTextStyle()
-                .bigText(remoteMessage.getData().get(Constants.KEY_MESSAGE)));
+        builder.setStyle(new NotificationCompat.BigTextStyle().bigText(remoteMessage.getData().get(Constants.KEY_MESSAGE)));
         builder.setPriority(NotificationCompat.PRIORITY_MAX);
         builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
         builder.setContentIntent(pendingIntent);
         builder.setAutoCancel(true);
 
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence channelName = "Chat Message";
             String channelDescription = "Chat Notification";
             int importance = NotificationManager.IMPORTANCE_HIGH;
@@ -74,9 +75,9 @@ public class MessageService extends FirebaseMessagingService {
         }
 
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         notificationManagerCompat.notify(1, builder.build());
-
     }
-
-
 }

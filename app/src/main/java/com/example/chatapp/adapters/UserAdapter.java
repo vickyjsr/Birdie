@@ -28,7 +28,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemContainerUserBinding itemContainerUserBinding = ItemContainerUserBinding.inflate(LayoutInflater.from(parent.getContext()),parent,false);
+        ItemContainerUserBinding itemContainerUserBinding = ItemContainerUserBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new UserViewHolder(itemContainerUserBinding);
     }
 
@@ -44,24 +44,19 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
     class UserViewHolder extends RecyclerView.ViewHolder {
         ItemContainerUserBinding binding;
-        UserViewHolder(ItemContainerUserBinding itemContainerUser_binding)
-        {
+
+        UserViewHolder(ItemContainerUserBinding itemContainerUser_binding) {
             super(itemContainerUser_binding.getRoot());
             binding = itemContainerUser_binding;
         }
 
-        void setUserData(Users users)
-        {
+        void setUserData(Users users) {
             binding.txtname.setText(users.name);
             binding.textEmail.setText(users.email);
             Glide.with(binding.imageProfile.getContext()).load(Uri.parse(users.image)).into(binding.imageProfile);
 
             binding.txtname.setText(users.name);
-            binding.getRoot().setOnClickListener(v->userListener.onUserClicked(users));
+            binding.getRoot().setOnClickListener(v -> userListener.onUserClicked(users));
         }
-
     }
-
-
-
 }

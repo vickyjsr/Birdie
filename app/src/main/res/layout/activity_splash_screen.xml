@@ -10,34 +10,30 @@
         android:id="@+id/topview"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_300sdp"
-        android:background="@color/primary"
-        />
+        android:background="@color/primary" />
 
     <ImageView
         android:id="@+id/iv_topv"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_75sdp"
-        android:background="@drawable/ic_wave_real"
         android:layout_below="@id/topview"
-        />
+        android:background="@drawable/ic_wave_real" />
 
     <ImageView
         android:id="@+id/introPic"
         android:layout_width="350dp"
         android:layout_height="350dp"
-        android:background="@drawable/chatsy"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        />
+        android:background="@drawable/chatsy" />
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/introPic"
-        android:gravity="center"
         android:layout_centerHorizontal="true"
         android:background="@drawable/ic_chatsy"
-        android:text="@string/app_name"
-        />
+        android:gravity="center"
+        android:text="@string/app_name" />
 
 </RelativeLayout>

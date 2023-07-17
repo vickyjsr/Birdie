@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginTop="@dimen/_8sdp"
     android:padding="@dimen/_4sdp">
 
     <com.makeramen.roundedimageview.RoundedImageView
+        android:id="@+id/imageProfile"
         android:layout_width="@dimen/_25sdp"
         android:layout_height="@dimen/_25sdp"
-        android:id="@+id/imageProfile"
         android:background="@drawable/backgroundimage"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="@+id/textmessage"
         app:layout_constraintStart_toStartOf="parent"
-        app:riv_oval="true"
-        />
+        app:riv_oval="true" />
 
     <TextView
         android:id="@+id/textmessage"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_4sdp"
         android:autoLink="all"
         android:background="@drawable/background_recieved_message"
         android:paddingStart="@dimen/_12sdp"
@@ -30,7 +30,6 @@
         android:paddingBottom="@dimen/_8sdp"
         android:textColor="@color/white"
         android:textSize="@dimen/_13ssp"
-        android:layout_marginStart="@dimen/_4sdp"
         app:layout_constraintStart_toEndOf="@id/imageProfile"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_max="wrap"
@@ -52,14 +51,13 @@
         android:textColor="@color/secondaryText"
         android:textSize="@dimen/_8ssp"
         app:layout_constraintStart_toStartOf="@id/textmessage"
-        app:layout_constraintTop_toBottomOf="@+id/textmessage"
-        />
-<!--    <TextView-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:visibility="gone"-->
-<!--        android:id="@+id/txtSeen"-->
-<!--        app:layout_constraintTop_toBottomOf="@id/textmessage"-->
-<!--        />-->
+        app:layout_constraintTop_toBottomOf="@+id/textmessage" />
+    <!--    <TextView-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:visibility="gone"-->
+    <!--        android:id="@+id/txtSeen"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/textmessage"-->
+    <!--        />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -58,54 +58,43 @@ public class MainActivity extends BaseActivity implements ConversationListener {
     }
 
     private void setListeners() {
-        binding.signout.setOnClickListener(v-> sign_out());
-        binding.fabnewChat.setOnClickListener(v-> startActivity(new Intent(getApplicationContext(),UsersActivity.class)));
+        binding.signout.setOnClickListener(v -> sign_out());
+        binding.fabnewChat.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), UsersActivity.class)));
     }
 
     private void loadUserDetails() {
         binding.txtname.setText(preferenceManager.getString(Constants.KEY_NAME));
 
-        Glide.with(this)
-                .load((preferenceManager.getString(Constants.KEY_IMAGE)))
-                .into(binding.imgprofile);
+        Glide.with(this).load((preferenceManager.getString(Constants.KEY_IMAGE))).into(binding.imgprofile);
     }
 
     private void showToast(String message) {
-        Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     private void listenConversations() {
-        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
-                .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
-                .addSnapshotListener(eventListener);
-        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
-                .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
-                .addSnapshotListener(eventListener);
+        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID)).addSnapshotListener(eventListener);
+        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID)).addSnapshotListener(eventListener);
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private final EventListener<QuerySnapshot> eventListener = (value, error)->{
-        if(error!=null)
-        {
+    private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
+        if (error != null) {
             return;
         }
-        if(value!=null)
-        {
-            for(DocumentChange documentChange:value.getDocumentChanges())
-            {
-                if(documentChange.getType()==DocumentChange.Type.ADDED)
-                {
+        if (value != null) {
+            for (DocumentChange documentChange : value.getDocumentChanges()) {
+                if (documentChange.getType() == DocumentChange.Type.ADDED) {
                     String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.senderId = senderId;
                     chatMessage.recieverId = receiverId;
-                    if(preferenceManager.getString(Constants.KEY_USER_ID).equals(senderId)) {
+                    if (preferenceManager.getString(Constants.KEY_USER_ID).equals(senderId)) {
                         chatMessage.conversationImage = documentChange.getDocument().getString(Constants.KEY_RECEIVER_IMAGE);
                         chatMessage.conversationName = documentChange.getDocument().getString(Constants.KEY_RECEIVER_NAME);
                         chatMessage.conversationId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
-                    }
-                    else {
+                    } else {
                         chatMessage.conversationImage = documentChange.getDocument().getString(Constants.KEY_SENDER_IMAGE);
                         chatMessage.conversationName = documentChange.getDocument().getString(Constants.KEY_SENDER_NAME);
                         chatMessage.conversationId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
@@ -114,23 +103,18 @@ public class MainActivity extends BaseActivity implements ConversationListener {
                     chatMessage.dateobject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     chatMessage.uniqueID = documentChange.getDocument().getString(Constants.CHAT_UNIQUE_ID);
 
-                    for(int i=0;i<conversations.size();i++)
-                    {
-                        if(conversations.get(i).conversationName.equals(chatMessage.conversationName))
-                        {
+                    for (int i = 0; i < conversations.size(); i++) {
+                        if (conversations.get(i).conversationName.equals(chatMessage.conversationName)) {
                             conversations.remove(i);
                             break;
                         }
                     }
                     conversations.add(chatMessage);
-                }
-                else if(documentChange.getType() == DocumentChange.Type.MODIFIED) {
-                    for(int i=0;i<conversations.size();i++)
-                    {
+                } else if (documentChange.getType() == DocumentChange.Type.MODIFIED) {
+                    for (int i = 0; i < conversations.size(); i++) {
                         String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                         String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
-                        if(conversations.get(i).senderId.equals(senderId) && conversations.get(i).recieverId.equals(receiverId))
-                        {
+                        if (conversations.get(i).senderId.equals(senderId) && conversations.get(i).recieverId.equals(receiverId)) {
                             conversations.get(i).message = documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGE);
                             conversations.get(i).dateobject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                             break;
@@ -147,35 +131,28 @@ public class MainActivity extends BaseActivity implements ConversationListener {
         }
     };
 
-    private void getToken()
-    {
+    private void getToken() {
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(this::updateToken);
     }
 
-    private void updateToken(String token)
-    {
+    private void updateToken(String token) {
         preferenceManager.putString(Constants.KEY_FCM_TOKEN, token);
         FirebaseFirestore database = FirebaseFirestore.getInstance();
-        DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS)
-                .document(preferenceManager.getString(Constants.KEY_USER_ID));
-        documentReference.update(Constants.KEY_FCM_TOKEN,token)
-                .addOnFailureListener(e->showToast("Unable to Update Token"));
+        DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
+        documentReference.update(Constants.KEY_FCM_TOKEN, token).addOnFailureListener(e -> showToast("Unable to Update Token"));
     }
 
     private void sign_out() {
         showToast("Signing out ...");
         FirebaseFirestore database = FirebaseFirestore.getInstance();
-        DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS)
-                .document(preferenceManager.getString(Constants.KEY_USER_ID));
-        HashMap<String,Object> updates = new HashMap<>();
+        DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
+        HashMap<String, Object> updates = new HashMap<>();
         updates.put(Constants.KEY_FCM_TOKEN, FieldValue.delete());
-        documentReference.update(updates)
-                .addOnSuccessListener(unused->{
-                    preferenceManager.clear();
-                    startActivity(new Intent(getApplicationContext(),SignInActivity.class));
-                    finish();
-                })
-                .addOnFailureListener(e->showToast("Unable to Sign out"));
+        documentReference.update(updates).addOnSuccessListener(unused -> {
+            preferenceManager.clear();
+            startActivity(new Intent(getApplicationContext(), SignInActivity.class));
+            finish();
+        }).addOnFailureListener(e -> showToast("Unable to Sign out"));
     }
 
     @Override

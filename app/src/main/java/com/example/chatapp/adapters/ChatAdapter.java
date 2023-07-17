@@ -59,115 +59,91 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private String encrypt(String password, String s) throws Exception {
         SecretKeySpec keySpec = generateKey(password);
         Cipher c = Cipher.getInstance(AES);
-        c.init(Cipher.ENCRYPT_MODE,keySpec);
+        c.init(Cipher.ENCRYPT_MODE, keySpec);
         byte[] encVal = c.doFinal(s.getBytes());
-        return Base64.encodeToString(encVal,Base64.DEFAULT);
+        return Base64.encodeToString(encVal, Base64.DEFAULT);
     }
 
     private SecretKeySpec generateKey(String password) throws Exception {
         final MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] bytes = password.getBytes("UTF-8");
-        digest.update(bytes,0,bytes.length);
+        digest.update(bytes, 0, bytes.length);
         byte[] key = digest.digest();
-        return new SecretKeySpec(key,AES);
+        return new SecretKeySpec(key, AES);
     }
 
     public void delete_A_Chat(int position, int type) {
 
-        if(type == VIEW_TYPE_RECEIVED)return;
+        if (type == VIEW_TYPE_RECEIVED) return;
 
         ChatMessage message = chatMessages.get(position);
         String encrypt = null;
         try {
-            encrypt = encrypt(message.uniqueID,"This Message was Deleted!!");
+            encrypt = encrypt(message.uniqueID, "This Message was Deleted!!");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         String finalEncrypt = encrypt;
-        database.collection(Constants.KEY_COLLECTION_CHAT)
-                .whereEqualTo(Constants.CHAT_UNIQUE_ID,message.uniqueID)
-                .whereEqualTo(Constants.KEY_MESSAGE, message.message)
-                .get().addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && !Objects.requireNonNull(task.getResult()).isEmpty()) {
-                        DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-                        String documentID = documentSnapshot.getId();
+        database.collection(Constants.KEY_COLLECTION_CHAT).whereEqualTo(Constants.CHAT_UNIQUE_ID, message.uniqueID).whereEqualTo(Constants.KEY_MESSAGE, message.message).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && !Objects.requireNonNull(task.getResult()).isEmpty()) {
+                DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                String documentID = documentSnapshot.getId();
 
-                        database.collection(Constants.KEY_COLLECTION_CHAT)
-                                .document(documentID)
-                                .update(Constants.KEY_MESSAGE, finalEncrypt)
-                                .addOnSuccessListener(aVoid -> {
-                                    singleChatRemove.removeItemAt(position);
+                database.collection(Constants.KEY_COLLECTION_CHAT).document(documentID).update(Constants.KEY_MESSAGE, finalEncrypt).addOnSuccessListener(aVoid -> {
+                    singleChatRemove.removeItemAt(position);
 //                                    Toast.makeText(context, "Deleted!!", Toast.LENGTH_SHORT).show();
-                                }).addOnFailureListener(e -> {});
-                    }
+                }).addOnFailureListener(e -> {
                 });
+            }
+        });
     }
-
-
-
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if(viewType==VIEW_TYPE_SENT)
-        {
-            return new SentMessageViewHolder(
-                    ItemContainerSentMessageBinding.inflate(LayoutInflater.from(parent.getContext()),
-                            parent,false));
+        if (viewType == VIEW_TYPE_SENT) {
+            return new SentMessageViewHolder(ItemContainerSentMessageBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        } else {
+            return new ReceivedMessageViewHolder(ItemContainerRecievedMessageBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
         }
-        else {
-            return new ReceivedMessageViewHolder(
-                    ItemContainerRecievedMessageBinding.inflate(LayoutInflater.from(parent.getContext()),
-                            parent,false));
-        }
-
-
-
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         holder.setIsRecyclable(false);
-        if(getItemViewType(position)==VIEW_TYPE_SENT)
-        {
+        if (getItemViewType(position) == VIEW_TYPE_SENT) {
             ((SentMessageViewHolder) holder).setData(chatMessages.get(position));
 
             String dec = null;
             try {
-                dec = ((SentMessageViewHolder) holder).decrypt(chatMessages.get(position).uniqueID,chatMessages.get(position).message);
+                dec = ((SentMessageViewHolder) holder).decrypt(chatMessages.get(position).uniqueID, chatMessages.get(position).message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            assert dec != null;
-
-            if(!dec.equals("This Message was Deleted!!")) {
+            if (dec != null && !dec.equals("This Message was Deleted!!")) {
                 holder.itemView.setOnClickListener(v -> {
-                    AlertDialog.Builder builder =new AlertDialog.Builder(context);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
                     builder.setMessage("Sure you want to delete?").setCancelable(false).setPositiveButton("YES", (dialog, which) -> {
                         delete_A_Chat(position, getItemViewType(position));
                         ((SentMessageViewHolder) holder).binding.textmessage.setBackgroundResource(R.drawable.background_sent_message_deleted);
-                    })
-                            .setNegativeButton("No", (dialog, which) -> dialog.cancel());
+                    }).setNegativeButton("No", (dialog, which) -> dialog.cancel());
                     AlertDialog alertDialog = builder.create();
                     alertDialog.show();
                 });
             }
-        }
-        else {
+        } else {
             ((ReceivedMessageViewHolder) holder).setData(chatMessages.get(position), receiveProfileImage);
 
             String dec = null;
             try {
-                dec = ((ReceivedMessageViewHolder) holder).decrypt(chatMessages.get(position).uniqueID,chatMessages.get(position).message);
+                dec = ((ReceivedMessageViewHolder) holder).decrypt(chatMessages.get(position).uniqueID, chatMessages.get(position).message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            assert dec != null;
-
-            if(!dec.equals("This Message was Deleted!!")) {
+            if (dec != null && !dec.equals("This Message was Deleted!!")) {
                 holder.itemView.setOnClickListener(v -> react(position, getItemViewType(position)));
             }
         }
@@ -216,28 +192,22 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         dialog.show();
     }
 
-    private void uploadEmoji(int position,String emoji) {
+    private void uploadEmoji(int position, String emoji) {
         ChatMessage message = chatMessages.get(position);
 
-        database.collection(Constants.KEY_COLLECTION_CHAT)
-                .whereEqualTo(Constants.CHAT_UNIQUE_ID,message.uniqueID)
-                .whereEqualTo(Constants.RECEIVED_MESSAGE_EMOJI, message.emojiReciever)
-                .get().addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && !Objects.requireNonNull(task.getResult()).isEmpty()) {
-                        DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-                        String documentID = documentSnapshot.getId();
+        database.collection(Constants.KEY_COLLECTION_CHAT).whereEqualTo(Constants.CHAT_UNIQUE_ID, message.uniqueID).whereEqualTo(Constants.RECEIVED_MESSAGE_EMOJI, message.emojiReciever).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && !Objects.requireNonNull(task.getResult()).isEmpty()) {
+                DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                String documentID = documentSnapshot.getId();
 
-                        database.collection(Constants.KEY_COLLECTION_CHAT)
-                                .document(documentID)
-                                .update(Constants.RECEIVED_MESSAGE_EMOJI,emoji)
-                                .addOnSuccessListener(aVoid -> {
-                                    singleChatRemove.reactionListener(position,emoji);
+                database.collection(Constants.KEY_COLLECTION_CHAT).document(documentID).update(Constants.RECEIVED_MESSAGE_EMOJI, emoji).addOnSuccessListener(aVoid -> {
+                    singleChatRemove.reactionListener(position, emoji);
 //                                    Toast.makeText(context, "Reacted!!", Toast.LENGTH_SHORT).show();
-                                }).addOnFailureListener(e -> {
+                }).addOnFailureListener(e -> {
 
-                                });
-                    }
                 });
+            }
+        });
     }
 
     @Override
@@ -247,11 +217,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemViewType(int position) {
-        if(chatMessages.get(position).senderId.equals(senderId))
-        {
+        if (chatMessages.get(position).senderId.equals(senderId)) {
             return VIEW_TYPE_SENT;
-        }
-        else {
+        } else {
             return VIEW_TYPE_RECEIVED;
         }
     }
@@ -261,17 +229,15 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private final ItemContainerSentMessageBinding binding;
         private final String AES = "AES";
 
-        SentMessageViewHolder(ItemContainerSentMessageBinding itemContainerSentMessageBinding)
-        {
+        SentMessageViewHolder(ItemContainerSentMessageBinding itemContainerSentMessageBinding) {
             super(itemContainerSentMessageBinding.getRoot());
             binding = itemContainerSentMessageBinding;
         }
 
-        void setData(ChatMessage chatMessage)
-        {
+        void setData(ChatMessage chatMessage) {
             String decrypted = null;
             try {
-                decrypted = decrypt(chatMessage.uniqueID,chatMessage.message);
+                decrypted = decrypt(chatMessage.uniqueID, chatMessage.message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -280,7 +246,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             String s = chatMessage.emojiReciever;
 
             assert decrypted != null;
-            if(decrypted.equals("This Message was Deleted!!")) {
+            if (decrypted.equals("This Message was Deleted!!")) {
                 binding.textmessage.setBackgroundResource(R.drawable.background_sent_message_deleted);
                 binding.textmessage.setTextSize(14);
             }
@@ -307,8 +273,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     break;
             }
 
-            if(!decrypted.equals("This Message was Deleted!!"))
-            binding.reaction.setText(getUnicodeToEmoji(x));
+            if (!decrypted.equals("This Message was Deleted!!"))
+                binding.reaction.setText(getUnicodeToEmoji(x));
         }
 
         private String getUnicodeToEmoji(int unicode) {
@@ -318,8 +284,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private String decrypt(String password, String s) throws Exception {
             SecretKeySpec keySpec = generateKey(password);
             Cipher c = Cipher.getInstance(AES);
-            c.init(Cipher.DECRYPT_MODE,keySpec);
-            byte[] decodedValue = Base64.decode(s,Base64.DEFAULT);
+            c.init(Cipher.DECRYPT_MODE, keySpec);
+            byte[] decodedValue = Base64.decode(s, Base64.DEFAULT);
             byte[] decVal = c.doFinal(decodedValue);
             return new String(decVal);
         }
@@ -327,9 +293,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private SecretKeySpec generateKey(String password) throws Exception {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] bytes = password.getBytes("UTF-8");
-            digest.update(bytes,0,bytes.length);
+            digest.update(bytes, 0, bytes.length);
             byte[] key = digest.digest();
-            return new SecretKeySpec(key,AES);
+            return new SecretKeySpec(key, AES);
         }
 
     }
@@ -339,17 +305,16 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private final ItemContainerRecievedMessageBinding binding;
         private final String AES = "AES";
 
-        ReceivedMessageViewHolder(ItemContainerRecievedMessageBinding itemContainerRecievedMessageBinding)
-        {
+        ReceivedMessageViewHolder(ItemContainerRecievedMessageBinding itemContainerRecievedMessageBinding) {
             super(itemContainerRecievedMessageBinding.getRoot());
             binding = itemContainerRecievedMessageBinding;
         }
 
-        void setData(ChatMessage chatMessage,Uri receiverProfileImage) {
+        void setData(ChatMessage chatMessage, Uri receiverProfileImage) {
 
             String decrypted = null;
             try {
-                decrypted = decrypt(chatMessage.uniqueID,chatMessage.message);
+                decrypted = decrypt(chatMessage.uniqueID, chatMessage.message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -358,7 +323,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             binding.textdateTime.setText(chatMessage.dateTime);
 
             assert decrypted != null;
-            if(decrypted.equals("This Message was Deleted!!")) {
+            if (decrypted.equals("This Message was Deleted!!")) {
                 binding.textmessage.setBackgroundResource(R.drawable.background_recieved_message_deleted);
                 binding.textmessage.setTextSize(14);
             }
@@ -386,10 +351,10 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     break;
             }
 
-            if(!decrypted.equals("This Message was Deleted!!"))
+            if (!decrypted.equals("This Message was Deleted!!"))
                 binding.reaction.setText(getUnicodeToEmoji(x));
 
-            if(receiverProfileImage!=null) {
+            if (receiverProfileImage != null) {
                 Glide.with(binding.imageProfile.getContext()).load(receiverProfileImage).into(binding.imageProfile);
             }
         }
@@ -401,8 +366,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private String decrypt(String password, String s) throws Exception {
             SecretKeySpec keySpec = generateKey(password);
             Cipher c = Cipher.getInstance(AES);
-            c.init(Cipher.DECRYPT_MODE,keySpec);
-            byte[] decodedValue = Base64.decode(s,Base64.DEFAULT);
+            c.init(Cipher.DECRYPT_MODE, keySpec);
+            byte[] decodedValue = Base64.decode(s, Base64.DEFAULT);
             byte[] decVal = c.doFinal(decodedValue);
             return new String(decVal);
         }
@@ -410,14 +375,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private SecretKeySpec generateKey(String password) throws Exception {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] bytes = password.getBytes("UTF-8");
-            digest.update(bytes,0,bytes.length);
+            digest.update(bytes, 0, bytes.length);
             byte[] key = digest.digest();
-            return new SecretKeySpec(key,AES);
+            return new SecretKeySpec(key, AES);
         }
-
     }
-
-
-
-
 }

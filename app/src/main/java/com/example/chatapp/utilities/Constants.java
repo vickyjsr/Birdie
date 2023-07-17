@@ -33,15 +33,12 @@ public class Constants {
     public static final String CHAT_UNIQUE_ID = "uniqueID";
     public static final String RECEIVED_MESSAGE_EMOJI = "emoji";
 
-
-
     public static HashMap<String, String> remoteMsgHeaders = null;
 
     public static HashMap<String, String> getRemoteMsgHeaders() {
         remoteMsgHeaders = new HashMap<>();
-        remoteMsgHeaders.put(REMOTE_MSG_AUTHORIZATION,"key=AAAAILmrj6Y:APA91bHZpRiV_5PRLEVhKwzwIiHzNTwE9oskP7Beq5BvJ0ACYkb9FR__jnW497blV35LG_3989Y5aeUInNkvBRWslgnKuEutzEDa5Kp-WrdvpSUMzcRDX1D3R3FRS7Q1r5D7QLe8nNEh");
-        remoteMsgHeaders.put(REMOTE_MSG_CONTENT_TYPE,"application/json");
+        remoteMsgHeaders.put(REMOTE_MSG_AUTHORIZATION, "key=AAAAILmrj6Y:APA91bHZpRiV_5PRLEVhKwzwIiHzNTwE9oskP7Beq5BvJ0ACYkb9FR__jnW497blV35LG_3989Y5aeUInNkvBRWslgnKuEutzEDa5Kp-WrdvpSUMzcRDX1D3R3FRS7Q1r5D7QLe8nNEh");
+        remoteMsgHeaders.put(REMOTE_MSG_CONTENT_TYPE, "application/json");
         return remoteMsgHeaders;
     }
-
 }

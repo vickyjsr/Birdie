@@ -6,40 +6,39 @@
     android:layout_height="match_parent"
     android:clipToPadding="false"
     android:overScrollMode="never"
-    android:scrollbars="none"
     android:padding="@dimen/_24sdp"
+    android:scrollbars="none"
     tools:context=".activities.SignupActivity">
-
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:orientation="vertical"
-        >
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_40sdp"
-        android:text="New User"
-        android:textColor="@color/primaryText"
-        android:textSize="@dimen/_18ssp"
-        android:textStyle="bold" />
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_40sdp"
+            android:text="New User"
+            android:textColor="@color/primaryText"
+            android:textSize="@dimen/_18ssp"
+            android:textStyle="bold" />
 
         <FrameLayout
             android:id="@+id/profileImg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_20sdp"
-            >
+            android:layout_marginTop="@dimen/_20sdp">
+
             <com.makeramen.roundedimageview.RoundedImageView
                 android:id="@+id/imageProfile"
                 android:layout_width="@dimen/_80sdp"
                 android:layout_height="@dimen/_80sdp"
                 android:background="@drawable/backgroundimage"
-                app:riv_oval="true"
                 android:scaleType="centerCrop"
-                />
+                app:riv_oval="true" />
+
             <TextView
                 android:id="@+id/txtAddimg"
                 android:layout_width="wrap_content"
@@ -47,15 +46,14 @@
                 android:layout_gravity="center"
                 android:text="Add Image"
                 android:textColor="@color/secondaryText"
-                android:textSize="@dimen/_10ssp"
-                />
+                android:textSize="@dimen/_10ssp" />
         </FrameLayout>
 
         <EditText
+            android:id="@+id/inputName"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_45sdp"
             android:layout_marginTop="@dimen/_16sdp"
-            android:id="@+id/inputName"
             android:background="@color/inputBackground"
             android:hint="Name"
             android:imeOptions="actionNext"
@@ -64,14 +62,13 @@
             android:paddingStart="@dimen/_16sdp"
             android:paddingEnd="@dimen/_16sdp"
             android:textColor="@color/primaryText"
-            android:textSize="@dimen/_13ssp"
-            />
+            android:textSize="@dimen/_13ssp" />
 
         <EditText
+            android:id="@+id/inputEmail"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_45sdp"
             android:layout_marginTop="@dimen/_16sdp"
-            android:id="@+id/inputEmail"
             android:background="@color/inputBackground"
             android:hint="Email"
             android:imeOptions="actionNext"
@@ -80,14 +77,13 @@
             android:paddingStart="@dimen/_16sdp"
             android:paddingEnd="@dimen/_16sdp"
             android:textColor="@color/primaryText"
-            android:textSize="@dimen/_13ssp"
-            />
+            android:textSize="@dimen/_13ssp" />
 
         <EditText
+            android:id="@+id/inputPassword"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_45sdp"
             android:layout_marginTop="@dimen/_16sdp"
-            android:id="@+id/inputPassword"
             android:background="@color/inputBackground"
             android:hint="Password"
             android:imeOptions="actionNext"
@@ -96,15 +92,14 @@
             android:paddingStart="@dimen/_16sdp"
             android:paddingEnd="@dimen/_16sdp"
             android:textColor="@color/primaryText"
-            android:textSize="@dimen/_13ssp"
-            />
+            android:textSize="@dimen/_13ssp" />
 
 
         <EditText
+            android:id="@+id/inputconfirmPassword"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_45sdp"
             android:layout_marginTop="@dimen/_16sdp"
-            android:id="@+id/inputconfirmPassword"
             android:background="@color/inputBackground"
             android:hint="Confirm Password"
             android:imeOptions="actionNext"
@@ -113,8 +108,7 @@
             android:paddingStart="@dimen/_16sdp"
             android:paddingEnd="@dimen/_16sdp"
             android:textColor="@color/primaryText"
-            android:textSize="@dimen/_13ssp"
-            />
+            android:textSize="@dimen/_13ssp" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -127,20 +121,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_50sdp"
                 android:text="SIGN UP"
-                android:textSize="@dimen/_13ssp"
                 android:textColor="@color/white"
+                android:textSize="@dimen/_13ssp"
                 android:textStyle="bold"
-                app:cornerRadius="@dimen/_8sdp"
                 android:theme="@style/Theme.MaterialComponents.Light"
-                />
+                app:cornerRadius="@dimen/_8sdp" />
 
             <ProgressBar
                 android:id="@+id/progressbar"
                 android:layout_width="@dimen/_25sdp"
                 android:layout_height="@dimen/_25sdp"
                 android:layout_gravity="center"
-                android:visibility="invisible"
-                />
+                android:visibility="invisible" />
         </FrameLayout>
 
 

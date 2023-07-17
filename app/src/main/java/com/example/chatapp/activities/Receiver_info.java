@@ -38,29 +38,24 @@ public class Receiver_info extends AppCompatActivity {
         name = findViewById(R.id.textname);
         online = findViewById(R.id.textOnline);
 
-        Glide.with(this)
-                .load(Uri.parse(recieveUsers.image))
-                .into(profileImage);
+        Glide.with(this).load(Uri.parse(recieveUsers.image)).into(profileImage);
 
         name.setText(recieveUsers.name);
 
-        database.collection(Constants.KEY_COLLECTION_USERS).document(
-                recieveUsers.id).addSnapshotListener(this, ((value, error) -> {
-            if(error!=null) {
+        database.collection(Constants.KEY_COLLECTION_USERS).document(recieveUsers.id).addSnapshotListener(this, ((value, error) -> {
+            if (error != null) {
                 return;
             }
-            if(value!=null) {
-                if(value.getLong(Constants.KEY_AVAILABILITY)!=null)
-                {
+            if (value != null) {
+                if (value.getLong(Constants.KEY_AVAILABILITY) != null) {
                     int online = Objects.requireNonNull(value.getLong(Constants.KEY_AVAILABILITY)).intValue();
-                    isReceiverOnline = online==1;
+                    isReceiverOnline = online == 1;
                 }
                 recieveUsers.token = value.getString(Constants.KEY_FCM_TOKEN);
             }
-            if(isReceiverOnline) {
+            if (isReceiverOnline) {
                 online.setText("Online");
-            }
-            else {
+            } else {
                 online.setText("Offline");
             }
         }));

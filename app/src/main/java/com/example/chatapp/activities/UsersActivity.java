@@ -49,72 +49,59 @@ public class UsersActivity extends BaseActivity implements UserListener {
     }
 
     private void setListeners() {
-        binding.imgback.setOnClickListener(v->onBackPressed());
+        binding.imgback.setOnClickListener(v -> onBackPressed());
     }
 
-    private void getUsers()
-    {
+    private void getUsers() {
         loading(true);
         FirebaseFirestore database = FirebaseFirestore.getInstance();
-        database.collection(Constants.KEY_COLLECTION_USERS)
-                .get()
-                .addOnCompleteListener(task->{
-                    loading(false);
-                    String currentUserid = preferenceManager.getString(Constants.KEY_USER_ID);
-                    if(task.isSuccessful() && task.getResult()!=null && task.getResult().getDocuments().size()>0)
-                    {
-                        List<Users> users = new ArrayList<>();
-                        for(QueryDocumentSnapshot queryDocumentSnapshot:task.getResult())
-                        {
-                            if(currentUserid.equals(queryDocumentSnapshot.getId())) {
-                                continue;
-                            }
-                            Users user = new Users();
-                            user.name = queryDocumentSnapshot.getString(Constants.KEY_NAME);
-                            user.email = queryDocumentSnapshot.getString(Constants.KEY_EMAIL);
-                            user.image = queryDocumentSnapshot.getString(Constants.KEY_IMAGE);
-                            user.token = queryDocumentSnapshot.getString(Constants.KEY_FCM_TOKEN);
-                            user.id = queryDocumentSnapshot.getId();
-                            users.add(user);
-                        }
-                        if(users.size()>0)
-                        {
-                            UserAdapter userAdapter = new UserAdapter(users, this);
-                            binding.userRecyclerView.setAdapter(userAdapter);
-                            binding.userRecyclerView.setVisibility(View.VISIBLE);
-                        }
-                        else
-                        {
-                            showErrorMessage();
-                        }
+        database.collection(Constants.KEY_COLLECTION_USERS).get().addOnCompleteListener(task -> {
+            loading(false);
+            String currentUserid = preferenceManager.getString(Constants.KEY_USER_ID);
+            if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
+                List<Users> users = new ArrayList<>();
+                for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+                    if (currentUserid.equals(queryDocumentSnapshot.getId())) {
+                        continue;
                     }
-                    else
-                    {
-                        showErrorMessage();
-                    }
-                });
+                    Users user = new Users();
+                    user.name = queryDocumentSnapshot.getString(Constants.KEY_NAME);
+                    user.email = queryDocumentSnapshot.getString(Constants.KEY_EMAIL);
+                    user.image = queryDocumentSnapshot.getString(Constants.KEY_IMAGE);
+                    user.token = queryDocumentSnapshot.getString(Constants.KEY_FCM_TOKEN);
+                    user.id = queryDocumentSnapshot.getId();
+                    users.add(user);
+                }
+                if (users.size() > 0) {
+                    UserAdapter userAdapter = new UserAdapter(users, this);
+                    binding.userRecyclerView.setAdapter(userAdapter);
+                    binding.userRecyclerView.setVisibility(View.VISIBLE);
+                } else {
+                    showErrorMessage();
+                }
+            } else {
+                showErrorMessage();
+            }
+        });
     }
 
-    private void showErrorMessage()
-    {
-        binding.texterror.setText(String.format("%s","No User available"));
+    private void showErrorMessage() {
+        binding.texterror.setText(String.format("%s", "No User available"));
         binding.texterror.setVisibility(View.VISIBLE);
     }
 
     private void loading(Boolean isLoading) {
-        if(isLoading)
-        {
+        if (isLoading) {
             binding.progressbar.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             binding.progressbar.setVisibility(View.INVISIBLE);
         }
     }
 
     @Override
     public void onUserClicked(Users users) {
-        Intent intent = new Intent(getApplicationContext(),ChatActivity.class);
-        intent.putExtra(Constants.KEY_USER,users);
+        Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+        intent.putExtra(Constants.KEY_USER, users);
         startActivity(intent);
         finish();
     }
@@ -123,5 +110,4 @@ public class UsersActivity extends BaseActivity implements UserListener {
     public void onBackPressed() {
         super.onBackPressed();
     }
-
 }
